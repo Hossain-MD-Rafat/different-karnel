@@ -1,0 +1,268 @@
+import numpy as np
+import matplotlib.pyplot as plt
+import os
+import cv2
+
+convoluted={}
+convoluted2={}
+convoluted3={}
+pool1={}
+pool2={}
+img_dir = "C:/assignment1/cat.jpg"
+img1 = cv2.imread(img_dir)
+img2= cv2.cvtColor(img1, cv2.COLOR_BGR2RGB)
+plt.imshow(img2)
+print(img2.shape[0])
+print(img2.shape)
+print(img2)
+
+
+
+
+
+def convolution(img, kernel):
+    stride = 1
+    padvalue = 1
+    img_padded = padding(img, padvalue)
+    (fy, fx, fz) = kernel.shape
+    (iy, ix, iz) = img.shape
+    outputy = int((iy - fy + 2 * padvalue) / stride) + 1
+    outputx = int((ix - fx + 2 * padvalue) / stride) + 1
+    output = np.zeros((outputy,outputx,iz))
+    for x in range(outputx):
+        x1 = x * stride
+        x2 = x1 + fx  
+        for y in range(outputy):
+            y1 = y * stride
+            y2 = y1 + fy
+            for z in range(iz):              
+                output[y,x,z] = np.sum((kernel*img_padded[y1:y2, x1:x2, :]))
+    return output
+
+
+
+
+def padding(img,padvalue):
+    
+    padded_img= np.pad(img, ((padvalue, padvalue), (padvalue, padvalue), (0, 0)), mode ='constant', constant_values = 0)
+
+    return padded_img
+
+
+
+
+kernel0 = np.array([[[1, -1, 1],
+                    [-1, 1, -1],
+                    [1, -1, 1]],
+                   [[1, -1, 1],
+                    [-1, 1, -1],
+                    [1, -1, 1]],
+                   [[1, -1, 1],
+                   [-1, 1, -1],
+                   [1, -1, 1]]])
+
+
+kernel1 = np.array([[[-1, 1, -1],
+                    [1, -1, 1],
+                    [-1, 1, -1]],
+                   [[-1, 1, -1],
+                    [1, -1, 1],
+                    [-1, 1, -1]],
+                   [[-1, 1, -1],
+                   [1, -1, 1],
+                   [-1, 1, -1]]])
+
+
+kernel2 = np.array([[[1, -1, -1],
+                    [-1, 1, -1],
+                    [-1, -1, 1]],
+                   [[1, -1, -1],
+                    [-1, 1, -1],
+                    [-1, -1, 1]],
+                   [[1, -1, -1],
+                   [-1, 1, -1],
+                   [-1, -1, 1]]])
+
+
+kernel3 = np.array([[[-1, -1, 1],
+                    [-1, 1, -1],
+                    [1, -1, -1]],
+                   [[-1, -1, 1],
+                    [-1, 1, -1],
+                    [1, -1, -1]],
+                   [[-1, -1, 1],
+                   [-1, 1, -1],
+                   [1, -1, -1]]])
+
+kernel4 = np.array([[[1, 1, -1],
+                    [1, 1, -1],
+                    [1, 1, -1]],
+                   [[1, 1, 1],
+                    [1, 1, 1],
+                    [1, 1, 1]],
+                   [[1, 1, 1],
+                   [1, 1, 1],
+                   [1, -1, 1]]])
+
+
+
+
+
+
+
+def relu(x):
+    return np.maximum(0,x)
+
+
+
+def max_pooling(img):
+    poolstride = 1
+    (iy, ix, iz) = img.shape
+    (py,px,pz)=(iy/2 , ix/2, iz)
+    pyint=int(py)
+    pxint=int(px)
+    pzint=int(pz)
+    
+    output2=np.zeros((pyint,pxint,pzint))
+    
+    for x in range(int(ix/2)):
+        x1 = x * poolstride
+        x2 = x1 + 2 
+        for y in range(int(iy/2)):
+            y1=y * poolstride
+            y2 = y1 + 2
+            for z in range(iz):              
+                output2[y,x,z] = np.max(img[y1:y2, x1:x2, :])
+            poolstride=2    
+                
+                
+    return output2
+
+
+added_relu1=0
+fig, ax = plt.subplots(1,5,figsize=(30,30))
+fig, bx = plt.subplots(1,5,figsize=(30,30))
+fig, cx = plt.subplots()
+convoluted[0]=convolution(img2,kernel0)
+convoluted[1]=convolution(img2,kernel1)
+convoluted[2]=convolution(img2,kernel2)
+convoluted[3]=convolution(img2,kernel3)
+convoluted[4]=convolution(img2,kernel4)
+
+
+for i in range(5):
+    ax[i].imshow(convoluted[i].astype(np.uint8))
+    
+    
+    
+for i in range(5):  
+    relued_image=relu(convoluted[i])
+    bx[i].imshow(relued_image.astype(np.uint8))
+    added_relu1=added_relu1+relued_image
+    
+cx.imshow(added_relu1.astype(np.uint8))
+          
+          
+          
+
+
+    
+#for i in range(5):
+  # bx[i]=relu(convoluted[i])
+    
+    
+
+#plt.imshow(convoluted.astype(np.uint8))
+#print(conv)
+
+
+#relued_image=relu(convoluted)
+#plt.imshow(relued_image.astype(np.uint8))
+#pooled_img=max_pooling(convoluted)
+#plt.imshow(pooled_img.astype(np.uint8))
+
+
+
+
+added_relu2=0
+fig, dx = plt.subplots(1,5,figsize=(30,30))
+fig, ex = plt.subplots(1,5,figsize=(30,30))
+fig, fx = plt.subplots()
+fig, gx = plt.subplots(1,5,figsize=(30,30))
+convoluted2[0]=convolution(added_relu1,kernel0)
+convoluted2[1]=convolution(added_relu1,kernel1)
+convoluted2[2]=convolution(added_relu1,kernel2)
+convoluted2[3]=convolution(added_relu1,kernel3)
+convoluted2[4]=convolution(added_relu1,kernel4)
+
+
+for i in range(5):
+    dx[i].imshow(convoluted2[i].astype(np.uint8))
+    
+    
+    
+for i in range(5):  
+    relued_image2=relu(convoluted2[i])
+    ex[i].imshow(relued_image2.astype(np.uint8))
+    pool1[i]=max_pooling(relued_image2)
+    #added_relu2=added_relu2+relued_image2
+    
+#fx.imshow(added_relu1.astype(np.uint8))
+          
+          
+
+        
+for i in range(5):
+    gx[i].imshow(pool1[i].astype(np.uint8))
+       
+        
+
+
+    
+#for i in range(5):
+  # bx[i]=relu(convoluted[i])
+    
+    
+
+#plt.imshow(convoluted.astype(np.uint8))
+#print(conv)
+
+
+#relued_image=relu(convoluted)
+#plt.imshow(relued_image.astype(np.uint8))
+#pooled_img=max_pooling(convoluted)
+#plt.imshow(pooled_img.astype(np.uint8))
+
+
+
+
+fig, hx = plt.subplots(1,5,figsize=(30,30))
+fig, ix = plt.subplots(1,5,figsize=(30,30))
+fig, jx = plt.subplots(1,5,figsize=(30,30))
+
+
+added_pool=0
+for i in range(5):
+    added_pool=added_pool+pool1[i]
+    
+convoluted3[0]=convolution(added_pool,kernel0)
+convoluted3[1]=convolution(added_pool,kernel1)
+convoluted3[2]=convolution(added_pool,kernel2)
+convoluted3[3]=convolution(added_pool,kernel3)
+convoluted3[4]=convolution(added_pool,kernel4)
+    
+for i in range(5):
+    hx[i].imshow(convoluted3[i].astype(np.uint8))
+    
+    
+for i in range(5):
+    relued_image3=relu(convoluted3[i])
+    ix[i].imshow(relued_image3.astype(np.uint8))
+    pool2[i]=max_pooling(relued_image3)
+    
+for i in range(5):
+    jx[i].imshow(pool2[i].astype(np.uint8))
+
+
+
+
